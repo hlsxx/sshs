@@ -2,6 +2,7 @@ pub mod searchable;
 pub mod ssh;
 pub mod ssh_config;
 pub mod ui;
+pub mod window;
 
 use anyhow::Result;
 use clap::Parser;

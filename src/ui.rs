@@ -6,7 +6,6 @@ use crossterm::{
     }, execute, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
 };
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use ratatui::layout::Flex;
 #[allow(clippy::wildcard_imports)]
 use ratatui::{prelude::*, widgets::*};
 use std::{
@@ -20,7 +19,7 @@ use tui_input::backend::crossterm::EventHandler;
 use tui_input::Input;
 use unicode_width::UnicodeWidthStr;
 
-use crate::{searchable::Searchable, ssh::{self, Host}};
+use crate::{searchable::Searchable, ssh::{self}, window::{centered_rect, delete::ShowData as DeletePopupWindowShowData, DeletePopupWindow, PopupWindow}};
 
 const INFO_TEXT: &str = "(Esc) quit | (↑) move up | (↓) move down | (enter) select";
 
@@ -38,52 +37,17 @@ pub struct AppConfig {
     pub exit_after_ssh_session_ends: bool,
 }
 
-#[derive(Default)]
-struct PopupWindow {
-    is_active: bool,
-    host_index_to_delete: usize,
-    selected_button_index: usize
-}
-
-impl PopupWindow {
-    fn host_index_to_delete(&self) -> usize {
-        self.host_index_to_delete
-    }
-
-    fn is_active(&self) -> bool {
-        self.is_active
-    }
-
-    fn show(&mut self, host_index: usize) {
-        self.host_index_to_delete = host_index;
-        self.is_active = true;
-    }
-
-    fn close(&mut self) {
-        self.is_active = false;
-    }
-
-    fn toggle(&mut self) {
-        self.is_active = !self.is_active;
-    }
-
-    pub fn selected_button_index(&self) -> usize {
-        self.selected_button_index
-    }
-}
-
 pub struct App {
     config: AppConfig,
 
     search: Input,
 
     table_state: TableState,
-    hosts: Searchable<ssh::Host>,
     table_columns_constraints: Vec<Constraint>,
 
-    palette: tailwind::Palette,
-
-    popup_window: PopupWindow
+    pub(crate) hosts: Searchable<ssh::Host>,
+    pub(crate) palette: tailwind::Palette,
+    pub(crate) delete_popup_window: DeletePopupWindow
 }
 
 #[derive(PartialEq)]
@@ -149,7 +113,7 @@ impl App {
                 },
             ),
 
-            popup_window: PopupWindow::default()
+            delete_popup_window: DeletePopupWindow::default()
         };
         app.calculate_table_columns_constraints();
 
@@ -278,8 +242,9 @@ impl App {
                 }
             }
             Delete => {
-                let host_index = self.table_state.selected().unwrap_or(0);
-                self.popup_window.show(host_index);
+                let host_to_delete_index = self.table_state.selected().unwrap_or(0);
+                let host_to_delete = self.hosts[host_to_delete_index].clone();
+                self.delete_popup_window.show(DeletePopupWindowShowData::new(host_to_delete_index, host_to_delete));
             }
             _ => return Ok(AppKeyAction::Continue),
         }
@@ -465,8 +430,8 @@ fn ui(f: &mut Frame, app: &mut App) {
     render_table(f, app, rects[1]);
     render_footer(f, app, rects[2]);
 
-    if app.popup_window.is_active() {
-        render_popup(f, app);
+    if app.delete_popup_window.is_active() {
+        app.delete_popup_window.render(f);
     }
 
     let mut cursor_position = rects[0].as_position();
@@ -474,54 +439,6 @@ fn ui(f: &mut Frame, app: &mut App) {
     cursor_position.y += 1;
 
     f.set_cursor_position(cursor_position);
-}
-
-fn render_popup(f: &mut Frame, app: &mut App) {
-    let host_to_delete = &app.hosts[app.popup_window.host_index_to_delete()];
-
-    let area = f.area();
-
-    let block = Block::bordered()
-        .border_type(BorderType::Rounded)
-        .border_style(Style::new().fg(app.palette.c400));
-
-    let yes_style = if app.popup_window.selected_button_index() == 0 {
-        Style::default().fg(Color::Black).bg(Color::Green).add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::Green)
-    };
-
-    let no_style = if app.popup_window.selected_button_index() == 1 {
-        Style::default().fg(Color::Black).bg(Color::Red).add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::Red)
-    };
-
-    let text = Text::from(vec![
-        Line::from(vec![
-            Span::raw(format!("Delete `{}` record?", host_to_delete.name)),
-        ])
-        .bold(),
-        Line::default(),
-        Line::from(vec![
-            Span::styled("  Yes  ", yes_style),
-            Span::raw("   "), // spacing
-            Span::styled("  No  ", no_style),
-        ]),
-    ]);
-
-    let p = Paragraph::new(text)
-        .block(block)
-        .alignment(Alignment::Center)
-        .wrap(Wrap { trim: true });
-
-    let vertical = Layout::vertical([Constraint::Percentage(20)]).flex(Flex::Center);
-    let horizontal = Layout::horizontal([Constraint::Percentage(20)]).flex(Flex::Center);
-    let [area] = vertical.areas(area);
-    let [area] = horizontal.areas(area);
-
-    f.render_widget(Clear, area);
-    f.render_widget(p, area);
 }
 
 fn render_searchbar(f: &mut Frame, app: &mut App, area: Rect) {
