@@ -1,9 +1,10 @@
 pub mod delete;
 
 pub use delete::DeletePopupWindow;
-use ratatui::{layout::{Constraint, Direction, Layout, Rect}, Frame};
-
-use crate::ui::App;
+use ratatui::{
+    layout::{Constraint, Direction, Layout, Rect},
+    Frame,
+};
 
 pub trait PopupWindow {
     type ShowData;

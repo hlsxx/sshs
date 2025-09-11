@@ -1,30 +1,35 @@
-use ratatui::{layout::{Alignment, Constraint, Direction, Layout}, style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, BorderType, Clear, Paragraph}, Frame};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize},
+    text::{Line, Span, Text},
+    widgets::{Block, BorderType, Clear, Paragraph},
+    Frame,
+};
 
 use crate::ssh::Host;
 
-use super::{PopupWindow, centered_rect};
+use super::{centered_rect, PopupWindow};
 
 pub struct ShowData {
     host_index_to_delete: usize,
-    host_to_delete: Host
+    host_to_delete: Host,
 }
 
 impl ShowData {
     pub fn new(host_index_to_delete: usize, host_to_delete: Host) -> Self {
         Self {
             host_index_to_delete,
-            host_to_delete
+            host_to_delete,
         }
     }
 }
-
 
 #[derive(Default)]
 pub struct DeletePopupWindow {
     is_active: bool,
 
     selected_button_index: usize,
-    show_data: Option<ShowData>
+    show_data: Option<ShowData>,
 }
 
 impl PopupWindow for DeletePopupWindow {
@@ -35,7 +40,10 @@ impl PopupWindow for DeletePopupWindow {
     }
 
     fn show(&mut self, data: Self::ShowData) {
-        self.show_data = Some(ShowData::new(data.host_index_to_delete, data.host_to_delete));
+        self.show_data = Some(ShowData::new(
+            data.host_index_to_delete,
+            data.host_to_delete,
+        ));
         self.is_active = true;
     }
 
@@ -61,28 +69,35 @@ impl PopupWindow for DeletePopupWindow {
                 .margin(1)
                 .split(popup_area);
 
-            let block = Block::bordered()
-                .border_type(BorderType::Rounded);
-                // .border_style(Style::new().fg(Palette:));
+            let block = Block::bordered().border_type(BorderType::Rounded);
+            // .border_style(Style::new().fg(Palette:));
 
             f.render_widget(Clear, popup_area);
             f.render_widget(block, popup_area);
 
-            let question = Paragraph::new(Text::from(vec![
-                Line::from(vec![Span::raw(format!("Delete `{}` record?", show_data.host_to_delete.name))]).bold(),
-            ]))
-                .alignment(Alignment::Center);
+            let question = Paragraph::new(Text::from(vec![Line::from(vec![Span::raw(format!(
+                "Delete `{}` record?",
+                show_data.host_to_delete.name
+            ))])
+            .bold()]))
+            .alignment(Alignment::Center);
 
             f.render_widget(question, chunks[0]);
 
             let yes_style = if self.selected_button_index == 0 {
-                Style::default().fg(Color::Black).bg(Color::Green).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Black)
+                    .bg(Color::Green)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default().fg(Color::Green)
             };
 
             let no_style = if self.selected_button_index == 1 {
-                Style::default().fg(Color::Black).bg(Color::Red).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Black)
+                    .bg(Color::Red)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default().fg(Color::Red)
             };
@@ -93,11 +108,19 @@ impl PopupWindow for DeletePopupWindow {
                 Span::styled("  No  ", no_style),
             ]);
 
-            let buttons = Paragraph::new(Text::from(buttons_line))
-                .alignment(Alignment::Center);
+            let buttons = Paragraph::new(Text::from(buttons_line)).alignment(Alignment::Center);
 
             f.render_widget(buttons, chunks[2]);
         }
     }
+}
 
+impl DeletePopupWindow {
+    pub fn next(&mut self) {
+        self.selected_button_index = 1;
+    }
+
+    pub fn previous(&mut self) {
+        self.selected_button_index = 0;
+    }
 }

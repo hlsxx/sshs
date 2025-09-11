@@ -1,9 +1,12 @@
 use anyhow::Result;
 use crossterm::{
-    cursor::{Hide, Show}, event::{
+    cursor::{Hide, Show},
+    event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyEventKind,
         KeyModifiers,
-    }, execute, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
+    },
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 #[allow(clippy::wildcard_imports)]
@@ -19,7 +22,14 @@ use tui_input::backend::crossterm::EventHandler;
 use tui_input::Input;
 use unicode_width::UnicodeWidthStr;
 
-use crate::{searchable::Searchable, ssh::{self}, window::{centered_rect, delete::ShowData as DeletePopupWindowShowData, DeletePopupWindow, PopupWindow}};
+use crate::{
+    searchable::Searchable,
+    ssh::{self},
+    window::{
+        centered_rect, delete::ShowData as DeletePopupWindowShowData, DeletePopupWindow,
+        PopupWindow,
+    },
+};
 
 const INFO_TEXT: &str = "(Esc) quit | (↑) move up | (↓) move down | (enter) select";
 
@@ -47,7 +57,7 @@ pub struct App {
 
     pub(crate) hosts: Searchable<ssh::Host>,
     pub(crate) palette: tailwind::Palette,
-    pub(crate) delete_popup_window: DeletePopupWindow
+    pub(crate) delete_popup_window: DeletePopupWindow,
 }
 
 #[derive(PartialEq)]
@@ -113,7 +123,7 @@ impl App {
                 },
             ),
 
-            delete_popup_window: DeletePopupWindow::default()
+            delete_popup_window: DeletePopupWindow::default(),
         };
         app.calculate_table_columns_constraints();
 
@@ -244,7 +254,21 @@ impl App {
             Delete => {
                 let host_to_delete_index = self.table_state.selected().unwrap_or(0);
                 let host_to_delete = self.hosts[host_to_delete_index].clone();
-                self.delete_popup_window.show(DeletePopupWindowShowData::new(host_to_delete_index, host_to_delete));
+                self.delete_popup_window
+                    .show(DeletePopupWindowShowData::new(
+                        host_to_delete_index,
+                        host_to_delete,
+                    ));
+            }
+            Left => {
+                if self.delete_popup_window.is_active() {
+                    self.delete_popup_window.previous();
+                }
+            }
+            Right => {
+                if self.delete_popup_window.is_active() {
+                    self.delete_popup_window.next();
+                }
             }
             _ => return Ok(AppKeyAction::Continue),
         }
