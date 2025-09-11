@@ -26,12 +26,12 @@ use crate::{
     searchable::Searchable,
     ssh::{self},
     window::{
-        centered_rect, delete::ShowData as DeletePopupWindowShowData, DeletePopupWindow,
+        delete::ShowData as DeletePopupWindowShowData, DeletePopupWindow,
         PopupWindow,
     },
 };
 
-const INFO_TEXT: &str = "(Esc) quit | (↑) move up | (↓) move down | (enter) select";
+const INFO_TEXT: &str = "(Esc) quit | (↑) move up | (↓) move down | (enter) select | (Del) delete";
 
 #[derive(Clone)]
 pub struct AppConfig {
@@ -208,7 +208,14 @@ impl App {
         }
 
         match key.code {
-            Esc => return Ok(AppKeyAction::Stop),
+            Esc => {
+                // Hide popup if is showed else exit app
+                if self.delete_popup_window.is_active() {
+                    self.delete_popup_window.hide();
+                } else {
+                    return Ok(AppKeyAction::Stop)
+                }
+            },
             Down => self.next(),
             Up => self.previous(),
             Home => self.table_state.select(Some(0)),

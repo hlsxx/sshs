@@ -11,7 +11,7 @@ pub trait PopupWindow {
 
     fn is_active(&self) -> bool;
     fn show(&mut self, data: Self::ShowData);
-    fn close(&mut self);
+    fn hide(&mut self);
     fn toggle(&mut self);
     fn render(&mut self, f: &mut Frame);
 }

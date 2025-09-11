@@ -47,7 +47,7 @@ impl PopupWindow for DeletePopupWindow {
         self.is_active = true;
     }
 
-    fn close(&mut self) {
+    fn hide(&mut self) {
         self.is_active = false;
     }
 
