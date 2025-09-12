@@ -1,13 +1,21 @@
 pub mod delete;
 
+use anyhow::Result;
+use crossterm::event::KeyEvent;
 pub use delete::DeletePopupWindow;
 use ratatui::{
-    layout::{Constraint, Direction, Layout, Rect},
-    Frame,
+    layout::{Constraint, Direction, Layout, Rect}, prelude::Backend, Frame
 };
+
+use crate::ui::AppKeyAction;
 
 pub trait PopupWindow {
     type ShowData;
+
+    fn on_key_press(
+        &mut self,
+        key: KeyEvent,
+    ) -> Result<AppKeyAction>;
 
     fn is_active(&self) -> bool;
     fn show(&mut self, data: Self::ShowData);

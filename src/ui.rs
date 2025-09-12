@@ -61,7 +61,7 @@ pub struct App {
 }
 
 #[derive(PartialEq)]
-enum AppKeyAction {
+pub enum AppKeyAction {
     Ok,
     Stop,
     Continue,
@@ -171,8 +171,10 @@ impl App {
                     }
                 }
 
-                self.search.handle_event(&ev);
-                self.hosts.search(self.search.value());
+                if !self.delete_popup_window.is_active() {
+                    self.search.handle_event(&ev);
+                    self.hosts.search(self.search.value());
+                }
 
                 let selected = self.table_state.selected().unwrap_or(0);
                 if selected >= self.hosts.len() {
@@ -198,6 +200,11 @@ impl App {
         #[allow(clippy::enum_glob_use)]
         use KeyCode::*;
 
+        // If Popup Window is active `consume` key events
+        if self.delete_popup_window.is_active() {
+            return self.delete_popup_window.on_key_press(key);
+        }
+
         let is_ctrl_pressed = key.modifiers.contains(KeyModifiers::CONTROL);
 
         if is_ctrl_pressed {
@@ -208,14 +215,7 @@ impl App {
         }
 
         match key.code {
-            Esc => {
-                // Hide popup if is showed else exit app
-                if self.delete_popup_window.is_active() {
-                    self.delete_popup_window.hide();
-                } else {
-                    return Ok(AppKeyAction::Stop)
-                }
-            },
+            Esc => return Ok(AppKeyAction::Stop),
             Down => self.next(),
             Up => self.previous(),
             Home => self.table_state.select(Some(0)),
@@ -266,16 +266,6 @@ impl App {
                         host_to_delete_index,
                         host_to_delete,
                     ));
-            }
-            Left => {
-                if self.delete_popup_window.is_active() {
-                    self.delete_popup_window.previous();
-                }
-            }
-            Right => {
-                if self.delete_popup_window.is_active() {
-                    self.delete_popup_window.next();
-                }
             }
             _ => return Ok(AppKeyAction::Continue),
         }

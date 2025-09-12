@@ -1,12 +1,10 @@
+use anyhow::Result;
+use crossterm::event::{KeyEvent, KeyCode};
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize},
-    text::{Line, Span, Text},
-    widgets::{Block, BorderType, Clear, Paragraph},
-    Frame,
+    layout::{Alignment, Constraint, Direction, Layout}, prelude::Backend, style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, BorderType, Clear, Paragraph}, Frame
 };
 
-use crate::ssh::Host;
+use crate::{ssh::Host, ui::AppKeyAction};
 
 use super::{centered_rect, PopupWindow};
 
@@ -34,6 +32,31 @@ pub struct DeletePopupWindow {
 
 impl PopupWindow for DeletePopupWindow {
     type ShowData = ShowData;
+
+    fn on_key_press(
+        &mut self,
+        key: KeyEvent,
+    ) -> Result<AppKeyAction> {
+        #[allow(clippy::enum_glob_use)]
+        use KeyCode::*;
+
+        match key.code {
+            Esc => self.hide(),
+            Left => {
+                if self.is_active() {
+                    self.previous();
+                }
+            }
+            Right => {
+                if self.is_active() {
+                    self.next();
+                }
+            }
+            _ => return Ok(AppKeyAction::Continue),
+        }
+
+        Ok(AppKeyAction::Ok)
+    }
 
     fn is_active(&self) -> bool {
         self.is_active
