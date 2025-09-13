@@ -4,19 +4,21 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout}, prelude::Backend, style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, BorderType, Clear, Paragraph}, Frame
 };
 
-use crate::{ssh::Host, ui::AppKeyAction};
+use crate::{ssh::Host, ssh_config, ui::AppKeyAction};
 
 use super::{centered_rect, PopupWindow};
 
 pub struct ShowData {
-    host_index_to_delete: usize,
+    hosts: Vec<Host>,
+    host_to_delete_index: usize,
     host_to_delete: Host,
 }
 
 impl ShowData {
-    pub fn new(host_index_to_delete: usize, host_to_delete: Host) -> Self {
+    pub fn new(hosts: Vec<Host>, host_to_delete_index: usize, host_to_delete: Host) -> Self {
         Self {
-            host_index_to_delete,
+            hosts,
+            host_to_delete_index,
             host_to_delete,
         }
     }
@@ -41,6 +43,17 @@ impl PopupWindow for DeletePopupWindow {
         use KeyCode::*;
 
         match key.code {
+            Enter => {
+                let show_data = self.show_data.as_ref().unwrap();
+                let new_hosts = show_data.hosts
+                    .iter()
+                    .enumerate()
+                    .filter(|(index, _)| *index != show_data.host_to_delete_index)
+                    .map(|(_, host)| host)
+                    .collect::<Vec<&Host>>();
+
+                ssh_config::Parser::save_into_file(new_hosts)?;
+            }
             Esc => self.hide(),
             Left => {
                 if self.is_active() {
@@ -63,10 +76,7 @@ impl PopupWindow for DeletePopupWindow {
     }
 
     fn show(&mut self, data: Self::ShowData) {
-        self.show_data = Some(ShowData::new(
-            data.host_index_to_delete,
-            data.host_to_delete,
-        ));
+        self.show_data = Some(data);
         self.is_active = true;
     }
 

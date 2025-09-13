@@ -111,7 +111,7 @@ impl App {
             palette: tailwind::BLUE,
 
             hosts: Searchable::new(
-                hosts,
+                hosts.clone(),
                 &search_input,
                 move |host: &&ssh::Host, search_value: &str| -> bool {
                     search_value.is_empty()
@@ -263,6 +263,7 @@ impl App {
                 let host_to_delete = self.hosts[host_to_delete_index].clone();
                 self.delete_popup_window
                     .show(DeletePopupWindowShowData::new(
+                        self.hosts.items(),
                         host_to_delete_index,
                         host_to_delete,
                     ));

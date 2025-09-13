@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use handlebars::Handlebars;
 use itertools::Itertools;
 use serde::Serialize;
-use std::collections::VecDeque;
+use std::{collections::VecDeque, fmt::Display};
 use std::process::Command;
 
 use crate::ssh_config::{self, parser_error::ParseError, HostVecExt};
@@ -42,6 +42,32 @@ impl Host {
         let status = Command::new(command).args(args).spawn()?.wait()?;
         if !status.success() {
             std::process::exit(status.code().unwrap_or(1));
+        }
+
+        Ok(())
+    }
+}
+
+impl std::fmt::Display for Host {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.aliases.is_empty() {
+            writeln!(f, "Host {}", self.name)?;
+        } else {
+            writeln!(f, "Host {} {}", self.name, self.aliases)?;
+        }
+
+        writeln!(f, "    HostName {}", self.destination)?;
+
+        if let Some(user) = &self.user {
+            writeln!(f, "    User {}", user)?;
+        }
+
+        if let Some(port) = &self.port {
+            writeln!(f, "    Port {}", port)?;
+        }
+
+        if let Some(proxy) = &self.proxy_command {
+            writeln!(f, "    ProxyCommand {}", proxy)?;
         }
 
         Ok(())
