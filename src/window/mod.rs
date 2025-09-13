@@ -11,10 +11,12 @@ use crate::ui::AppKeyAction;
 
 pub trait PopupWindow {
     type ShowData;
+    type OnKeyPressData;
 
     fn on_key_press(
         &mut self,
         key: KeyEvent,
+        data: &mut Self::OnKeyPressData
     ) -> Result<AppKeyAction>;
 
     fn is_active(&self) -> bool;

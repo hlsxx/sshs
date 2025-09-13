@@ -62,7 +62,7 @@ impl Parser {
         Ok(hosts)
     }
 
-    pub fn save_into_file(hosts: Vec<&ssh::Host>) -> Result<()> {
+    pub fn save_into_file(hosts: Vec<ssh::Host>) -> Result<()> {
         let home = env::var("HOME").unwrap();
 
         let mut path = PathBuf::from(home);

@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use anyhow::Result;
 use crossterm::event::{KeyEvent, KeyCode};
 use ratatui::{
@@ -24,6 +26,18 @@ impl ShowData {
     }
 }
 
+pub struct OnKeyPressData {
+    pub hosts: Vec<Host>
+}
+
+impl OnKeyPressData {
+    pub fn new(hosts: Vec<Host>) -> Self {
+        Self {
+            hosts
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct DeletePopupWindow {
     is_active: bool,
@@ -34,25 +48,35 @@ pub struct DeletePopupWindow {
 
 impl PopupWindow for DeletePopupWindow {
     type ShowData = ShowData;
+    type OnKeyPressData = OnKeyPressData;
 
     fn on_key_press(
         &mut self,
         key: KeyEvent,
+        data: &mut Self::OnKeyPressData
     ) -> Result<AppKeyAction> {
         #[allow(clippy::enum_glob_use)]
         use KeyCode::*;
 
         match key.code {
             Enter => {
+                if self.selected_button_index == 1 {
+                    self.hide();
+                    return Ok(AppKeyAction::Continue)
+                }
+
                 let show_data = self.show_data.as_ref().unwrap();
                 let new_hosts = show_data.hosts
                     .iter()
                     .enumerate()
                     .filter(|(index, _)| *index != show_data.host_to_delete_index)
-                    .map(|(_, host)| host)
-                    .collect::<Vec<&Host>>();
+                    .map(|(_, host)| host.clone())
+                    .collect::<Vec<Host>>();
+
+                data.hosts = new_hosts.clone();
 
                 ssh_config::Parser::save_into_file(new_hosts)?;
+                self.hide();
             }
             Esc => self.hide(),
             Left => {
