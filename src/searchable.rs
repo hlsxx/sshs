@@ -60,6 +60,10 @@ where
     pub fn iter(&self) -> std::slice::Iter<T> {
         self.filtered.iter()
     }
+
+    pub fn items(&self) -> Vec<T> {
+        self.vec.clone()
+    }
 }
 
 impl<'a, T> IntoIterator for &'a Searchable<T>
