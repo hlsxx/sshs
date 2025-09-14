@@ -26,10 +26,8 @@ use crate::{
     searchable::Searchable,
     ssh::{self},
     window::{
-        delete::ShowData as DeletePopupWindowShowData,
         delete::OnKeyPressData as DeletePopupWindowOnKeyPressData,
-        DeletePopupWindow,
-        PopupWindow,
+        delete::ShowData as DeletePopupWindowShowData, DeletePopupWindow, PopupWindow,
     },
 };
 
@@ -205,7 +203,10 @@ impl App {
         // If Popup Window is active `consume` key events
         if self.delete_popup_window.is_active() {
             let mut on_key_press_data = DeletePopupWindowOnKeyPressData::new(self.hosts.items());
-            let res = self.delete_popup_window.on_key_press(key, &mut on_key_press_data);
+
+            let res = self
+                .delete_popup_window
+                .on_key_press(key, &mut on_key_press_data);
             self.hosts = Searchable::new(on_key_press_data.hosts, "", |_, _| false);
             return res;
         }

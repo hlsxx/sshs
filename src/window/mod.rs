@@ -4,7 +4,9 @@ use anyhow::Result;
 use crossterm::event::KeyEvent;
 pub use delete::DeletePopupWindow;
 use ratatui::{
-    layout::{Constraint, Direction, Layout, Rect}, prelude::Backend, Frame
+    layout::{Constraint, Direction, Layout, Rect},
+    prelude::Backend,
+    Frame,
 };
 
 use crate::ui::AppKeyAction;
@@ -16,7 +18,7 @@ pub trait PopupWindow {
     fn on_key_press(
         &mut self,
         key: KeyEvent,
-        data: &mut Self::OnKeyPressData
+        data: &mut Self::OnKeyPressData,
     ) -> Result<AppKeyAction>;
 
     fn is_active(&self) -> bool;

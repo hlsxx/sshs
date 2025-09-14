@@ -1,9 +1,14 @@
 use std::ops::DerefMut;
 
 use anyhow::Result;
-use crossterm::event::{KeyEvent, KeyCode};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout}, prelude::Backend, style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, BorderType, Clear, Paragraph}, Frame
+    layout::{Alignment, Constraint, Direction, Layout},
+    prelude::Backend,
+    style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize},
+    text::{Line, Span, Text},
+    widgets::{Block, BorderType, Clear, Paragraph},
+    Frame,
 };
 
 use crate::{ssh::Host, ssh_config, ui::AppKeyAction};
@@ -27,14 +32,12 @@ impl ShowData {
 }
 
 pub struct OnKeyPressData {
-    pub hosts: Vec<Host>
+    pub hosts: Vec<Host>,
 }
 
 impl OnKeyPressData {
     pub fn new(hosts: Vec<Host>) -> Self {
-        Self {
-            hosts
-        }
+        Self { hosts }
     }
 }
 
@@ -53,7 +56,7 @@ impl PopupWindow for DeletePopupWindow {
     fn on_key_press(
         &mut self,
         key: KeyEvent,
-        data: &mut Self::OnKeyPressData
+        data: &mut Self::OnKeyPressData,
     ) -> Result<AppKeyAction> {
         #[allow(clippy::enum_glob_use)]
         use KeyCode::*;
@@ -62,11 +65,12 @@ impl PopupWindow for DeletePopupWindow {
             Enter => {
                 if self.selected_button_index == 1 {
                     self.hide();
-                    return Ok(AppKeyAction::Continue)
+                    return Ok(AppKeyAction::Continue);
                 }
 
                 let show_data = self.show_data.as_ref().unwrap();
-                let new_hosts = show_data.hosts
+                let new_hosts = show_data
+                    .hosts
                     .iter()
                     .enumerate()
                     .filter(|(index, _)| *index != show_data.host_to_delete_index)

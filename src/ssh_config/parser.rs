@@ -63,15 +63,12 @@ impl Parser {
     }
 
     pub fn save_into_file(hosts: Vec<ssh::Host>) -> Result<()> {
-        let home = env::var("HOME").unwrap();
+        let normalized_path = shellexpand::tilde("~/.ssh/config").to_string();
+        let path = std::fs::canonicalize(normalized_path)?;
 
-        let mut path = PathBuf::from(home);
-        path.push(".ssh/config");
+        let path = PathBuf::from(path);
 
-        let mut file = OpenOptions::new()
-            .write(true)
-            .truncate(true)
-            .open(path)?;
+        let mut file = OpenOptions::new().write(true).truncate(true).open(path)?;
 
         for host in hosts {
             writeln!(file, "{}", host)?;
