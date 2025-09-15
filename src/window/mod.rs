@@ -5,7 +5,6 @@ use crossterm::event::KeyEvent;
 pub use delete::DeletePopupWindow;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
-    prelude::Backend,
     Frame,
 };
 

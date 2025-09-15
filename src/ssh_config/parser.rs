@@ -1,6 +1,5 @@
 use anyhow::Result;
 use glob::glob;
-use std::env;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, Write};
@@ -62,11 +61,9 @@ impl Parser {
         Ok(hosts)
     }
 
-    pub fn save_into_file(hosts: Vec<ssh::Host>) -> Result<()> {
-        let normalized_path = shellexpand::tilde("~/.ssh/config").to_string();
+    pub fn save_into_file(hosts: Vec<ssh::Host>, path: &str) -> Result<()> {
+        let normalized_path = shellexpand::tilde(&path).to_string();
         let path = std::fs::canonicalize(normalized_path)?;
-
-        let path = PathBuf::from(path);
 
         let mut file = OpenOptions::new().write(true).truncate(true).open(path)?;
 

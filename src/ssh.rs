@@ -2,8 +2,8 @@ use anyhow::anyhow;
 use handlebars::Handlebars;
 use itertools::Itertools;
 use serde::Serialize;
+use std::collections::VecDeque;
 use std::process::Command;
-use std::{collections::VecDeque, fmt::Display};
 
 use crate::ssh_config::{self, parser_error::ParseError, HostVecExt};
 

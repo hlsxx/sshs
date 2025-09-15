@@ -1,11 +1,8 @@
-use std::ops::DerefMut;
-
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
-    prelude::Backend,
-    style::{palette::tailwind::Palette, Color, Modifier, Style, Stylize},
+    style::{Color, Modifier, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Clear, Paragraph},
     Frame,
@@ -32,12 +29,16 @@ impl ShowData {
 }
 
 pub struct OnKeyPressData {
+    pub config_paths: Vec<String>,
     pub hosts: Vec<Host>,
 }
 
 impl OnKeyPressData {
-    pub fn new(hosts: Vec<Host>) -> Self {
-        Self { hosts }
+    pub fn new(config_paths: Vec<String>, hosts: Vec<Host>) -> Self {
+        Self {
+            config_paths,
+            hosts,
+        }
     }
 }
 
@@ -68,7 +69,11 @@ impl PopupWindow for DeletePopupWindow {
                     return Ok(AppKeyAction::Continue);
                 }
 
+                // Select first path from the config
+                // let path = &data.config_paths.get(0).unwrap();
+                let path = "~/.ssh/config";
                 let show_data = self.show_data.as_ref().unwrap();
+
                 let new_hosts = show_data
                     .hosts
                     .iter()
@@ -79,7 +84,7 @@ impl PopupWindow for DeletePopupWindow {
 
                 data.hosts = new_hosts.clone();
 
-                ssh_config::Parser::save_into_file(new_hosts)?;
+                ssh_config::Parser::save_into_file(new_hosts, path)?;
                 self.hide();
             }
             Esc => self.hide(),
