@@ -4,7 +4,6 @@ use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
-use std::path::PathBuf;
 use std::str::FromStr;
 
 use crate::ssh;
