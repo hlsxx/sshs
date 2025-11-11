@@ -46,6 +46,14 @@ pacman -S sshs
 apk add sshs
 ```
 
+### NetBSD
+
+`sshs` is available on NetBSD from the [official repository](https://pkgsrc.se/security/sshs).
+
+```shell
+pkgin install sshs
+```
+
 ### NixOS / Nix
 
 #### As a Flake

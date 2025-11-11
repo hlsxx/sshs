@@ -39,6 +39,7 @@ pub struct AppConfig {
 
     pub search_filter: Option<String>,
     pub sort_by_name: bool,
+    pub sort_by_levenshtein: bool,
     pub show_proxy_command: bool,
 
     pub command_template: String,
@@ -111,7 +112,8 @@ impl App {
             palette: tailwind::BLUE,
 
             hosts: Searchable::new(
-                hosts.clone(),
+                config.sort_by_levenshtein,
+                hosts,
                 &search_input,
                 move |host: &&ssh::Host, search_value: &str| -> bool {
                     search_value.is_empty()
