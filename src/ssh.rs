@@ -5,8 +5,8 @@ use serde::Serialize;
 use std::collections::VecDeque;
 use std::process::Command;
 
-use crate::ssh_config::{self, parser_error::ParseError, HostVecExt};
 use crate::searchable::SearchableItem;
+use crate::ssh_config::{self, parser_error::ParseError, HostVecExt};
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Host {

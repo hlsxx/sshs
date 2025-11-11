@@ -213,7 +213,12 @@ impl App {
                 .delete_popup_window
                 .on_key_press(key, &mut on_key_press_data);
 
-            self.hosts = Searchable::new(on_key_press_data.hosts, "", |_, _| false);
+            self.hosts = Searchable::new(
+                self.config.sort_by_levenshtein,
+                on_key_press_data.hosts,
+                "",
+                |_, _| false,
+            );
 
             return res;
         }

@@ -1,5 +1,5 @@
-use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
+use fuzzy_matcher::FuzzyMatcher;
 
 type SearchableFn<T> = dyn FnMut(&&T, &str) -> bool;
 
@@ -49,7 +49,10 @@ where
             .iter()
             .filter(|host| (self.filter)(host, value))
             .map(|item| {
-                let score = self.matcher.fuzzy_match(item.search_text(), value).unwrap_or(0);
+                let score = self
+                    .matcher
+                    .fuzzy_match(item.search_text(), value)
+                    .unwrap_or(0);
                 (item.clone(), score)
             })
             .collect();
@@ -72,11 +75,11 @@ where
         self.filtered.is_empty()
     }
 
-    pub fn non_filtered_iter(&self) -> std::slice::Iter<T> {
+    pub fn non_filtered_iter(&self) -> std::slice::Iter<'_, T> {
         self.vec.iter()
     }
 
-    pub fn iter(&self) -> std::slice::Iter<T> {
+    pub fn iter(&self) -> std::slice::Iter<'_, T> {
         self.filtered.iter()
     }
 
